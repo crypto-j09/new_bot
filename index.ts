@@ -76,17 +76,44 @@ bot.on("message", async (ctx) => {
   } else {
     await ctx.reply("We're processing your request. Please wait...");
 
-    const result = await faucet(message);
-    if (result === "success") {
-      // Update Database
-      await updateTxRecord(String(userid), username, message);
+    try {
+      const result = await faucet(message);
+      if (result === "success") {
+        // Update Database
+        await updateTxRecord(String(userid), username, message);
 
-      await ctx.reply(
-        "We've sent 5 O3 tokens to your wallet address. Thank you for using our faucet"
-      );
-    } else {
-      await ctx.reply("Sorry. Internal server error. Please try again later.");
+        await ctx.reply(
+          "We've sent 5 O3 tokens to your wallet address. Thank you for using our faucet"
+        );
+      } else {
+        await ctx.reply(
+          "Sorry. Internal server error. Please try again later."
+        );
+      }
+    } catch (err: any) {
+      // Cast error to `any`
+      console.error("Error sending message to user:", err);
+      if (
+        err?.response?.description === "Forbidden: bot was blocked by the user"
+      ) {
+        console.log(`User ${userid} has blocked the bot`);
+      } else {
+        await ctx.reply(
+          "An unexpected error occurred. Please try again later."
+        );
+      }
     }
+    // const result = await faucet(message);
+    // if (result === "success") {
+    //   // Update Database
+    //   await updateTxRecord(String(userid), username, message);
+
+    //   await ctx.reply(
+    //     "We've sent 5 O3 tokens to your wallet address. Thank you for using our faucet"
+    //   );
+    // } else {
+    //   await ctx.reply("Sorry. Internal server error. Please try again later.");
+    // }
   }
 });
 
